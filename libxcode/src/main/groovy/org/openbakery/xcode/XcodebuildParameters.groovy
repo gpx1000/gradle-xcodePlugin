@@ -11,6 +11,7 @@ class XcodebuildParameters {
 
 	String scheme
 	String target
+	String XcodeProjectPath
 	Boolean simulator
 	Type type
 	String workspace
@@ -37,6 +38,7 @@ class XcodebuildParameters {
 		return "XcodebuildParameters {" +
 						", scheme='" + scheme + '\'' +
 						", target='" + target + '\'' +
+						", XcodeProjectPath='" + XcodeProjectPath + '\'' +
 						", simulator=" + simulator +
 						", type=" + type +
 						", workspace='" + workspace + '\'' +
@@ -62,6 +64,9 @@ class XcodebuildParameters {
 		}
 		if (other.scheme != null) {
 			scheme = other.scheme
+		}
+		if (other.scheme != null) {
+			XcodeProjectPath = other.XcodeProjectPath
 		}
 		if (other.simulator != null) {
 			simulator = other.simulator

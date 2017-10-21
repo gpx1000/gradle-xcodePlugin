@@ -38,6 +38,11 @@ class XcodeBuildTask extends AbstractXcodeBuildTask {
 		if (parameters.scheme == null && parameters.target == null) {
 			throw new IllegalArgumentException("No 'scheme' or 'target' specified, so do not know what to build");
 		}
+		def projectPath;
+		if(parameters.XcodeProjectPath == null)
+			projectPath = project.projectDir
+		else
+			projectPath = properties.XcodeprojectPath
 
 		if (!project.getBuildDir().exists()) {
 			project.getBuildDir().mkdirs()
