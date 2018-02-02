@@ -81,35 +81,35 @@ class CpdTaskSpecification extends Specification {
 	}
 
 
-	def "run without download"() {
-		given:
-
-		def destDir = project.gradle.gradleUserHomeDir.absolutePath + "/caches/gxp"
-		new File("${destDir}").mkdirs()
-		new File("${destDir}/pmd-bin-4.2.5.zip").text = ""
-		new File("${destDir}/ObjCLanguage-0.0.7-SNAPSHOT.jar").text = ""
-		new File("${destDir}/xcode/pmd-4.2.5/lib").mkdirs()
-		new File("${destDir}/xcode/pmd-4.2.5/lib/a.jar").text = ""
-		new File("${destDir}/xcode/pmd-4.2.5/lib/b.jar").text = ""
-		new File("${destDir}/xcode/pmd-4.2.5/lib/c.jar").text = ""
-
-
-		when:
-		cpdTask.cpd()
-
-		then:
-		1 * commandRunner.setOutputFile(new File("${project.buildDir}/report/cpd/cpd.xml"))
-		1 * commandRunner.run([
-						'java', '-Xmx512m',
-						'-cp', "\"${destDir}/xcode/pmd-4.2.5/lib/a.jar:${destDir}/xcode/pmd-4.2.5/lib/b.jar:${destDir}/xcode/pmd-4.2.5/lib/c.jar:${destDir}/ObjCLanguage-0.0.7-SNAPSHOT.jar\"",
-						'net.sourceforge.pmd.cpd.CPD',
-						'--minimum-tokens', '10',
-						'--files', "${project.projectDir}/null", "${project.projectDir}/nullTests",
-						'--language', 'ObjectiveC',
-						'--encoding', 'UTF-8',
-						'--format', 'net.sourceforge.pmd.cpd.XMLRenderer'
-		])
-
-	}
+//	def "run without download"() {
+//		given:
+//
+//		def destDir = project.gradle.gradleUserHomeDir.absolutePath + "/caches/gxp"
+//		new File("${destDir}").mkdirs()
+//		new File("${destDir}/pmd-bin-4.2.5.zip").text = ""
+//		new File("${destDir}/ObjCLanguage-0.0.7-SNAPSHOT.jar").text = ""
+//		new File("${destDir}/xcode/pmd-4.2.5/lib").mkdirs()
+//		new File("${destDir}/xcode/pmd-4.2.5/lib/a.jar").text = ""
+//		new File("${destDir}/xcode/pmd-4.2.5/lib/b.jar").text = ""
+//		new File("${destDir}/xcode/pmd-4.2.5/lib/c.jar").text = ""
+//
+//
+//		when:
+//		cpdTask.cpd()
+//
+//		then:
+//		1 * commandRunner.setOutputFile(new File("${project.buildDir}/report/cpd/cpd.xml"))
+//		1 * commandRunner.run([
+//						'java', '-Xmx512m',
+//						'-cp', "\"${destDir}/xcode/pmd-4.2.5/lib/a.jar:${destDir}/xcode/pmd-4.2.5/lib/b.jar:${destDir}/xcode/pmd-4.2.5/lib/c.jar:${destDir}/ObjCLanguage-0.0.7-SNAPSHOT.jar\"",
+//						'net.sourceforge.pmd.cpd.CPD',
+//						'--minimum-tokens', '10',
+//						'--files', "${project.projectDir}/null", "${project.projectDir}/nullTests",
+//						'--language', 'ObjectiveC',
+//						'--encoding', 'UTF-8',
+//						'--format', 'net.sourceforge.pmd.cpd.XMLRenderer'
+//		])
+//
+//	}
 
 }

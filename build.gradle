@@ -2,7 +2,7 @@ allprojects {
 	apply plugin: 'java-gradle-plugin'
 	apply plugin: 'groovy'
 
-	def versionNumber = "0.15.0"
+	def versionNumber = "0.0.17"
 
 	if (project.hasProperty("versionNumber")) {
 		versionNumber = project.versionNumber
@@ -15,7 +15,7 @@ allprojects {
 	}
 
 
-	group = 'org.openbakery'
+	group = 'com.gpxblog'
 	version = versionNumber
 
 	sourceCompatibility = "1.6"

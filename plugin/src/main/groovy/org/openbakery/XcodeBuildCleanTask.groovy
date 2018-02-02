@@ -17,21 +17,24 @@ package org.openbakery
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
+import org.gradle.internal.os.OperatingSystem
 
 
 class XcodeBuildCleanTask extends DefaultTask {
 
 	XcodeBuildCleanTask() {
 		super()
+		if(OperatingSystem.current().isMacOsX()) {
 
-		dependsOn(
-						XcodePlugin.KEYCHAIN_CLEAN_TASK_NAME,
-						XcodePlugin.PROVISIONING_CLEAN_TASK_NAME,
-						XcodePlugin.HOCKEYAPP_CLEAN_TASK_NAME,
-						XcodePlugin.HOCKEYAPP_CLEAN_TASK_NAME,
-						XcodePlugin.DEPLOYGATE_CLEAN_TASK_NAME,
-		)
-		this.description = "Cleans up the generated files from the previous build"
+			dependsOn(
+					XcodePlugin.KEYCHAIN_CLEAN_TASK_NAME,
+					XcodePlugin.PROVISIONING_CLEAN_TASK_NAME,
+					XcodePlugin.HOCKEYAPP_CLEAN_TASK_NAME,
+					XcodePlugin.HOCKEYAPP_CLEAN_TASK_NAME,
+					XcodePlugin.DEPLOYGATE_CLEAN_TASK_NAME,
+			)
+			this.description = "Cleans up the generated files from the previous build"
+		}
 	}
 
 	@TaskAction

@@ -4,6 +4,9 @@ import org.apache.commons.configuration.plist.XMLPropertyListConfiguration
 import org.gradle.api.tasks.TaskAction
 import org.openbakery.xcode.Xcodebuild
 
+import static groovy.io.FileType.ANY
+import static groovy.io.FileVisitResult.SKIP_SUBTREE
+
 class XcodeBuildForTestTask extends AbstractXcodeBuildTask {
 
 	File outputDirectory
@@ -18,6 +21,18 @@ class XcodeBuildForTestTask extends AbstractXcodeBuildTask {
 	}
 
 	Xcodebuild getXcodebuild() {
+		final excludedDirs = ['.svn', '.git', '.hg', '.idea', 'node_modules', '.gradle', 'CMakeFiles']
+		def file = null
+		project.projectDir.traverse(
+				type         : ANY,
+				nameFilter	 : ~/.*\.xcodeproj$/,
+				preDir       : { if (it.name in excludedDirs) return SKIP_SUBTREE },
+				visitRoot	 : true) {
+			if(file == null) {
+				file = it.parentFile
+			}
+		}
+
 		return new Xcodebuild(project.projectDir, commandRunner, xcode, parameters, getDestinationResolver().allFor(parameters))
 	}
 

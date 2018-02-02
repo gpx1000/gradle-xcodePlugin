@@ -27,8 +27,8 @@ class CommandRunnerSpecification extends Specification {
 		given:
 		def cpErrorOutput = "Command failed to run (exit code 64): 'cp'\n" +
 				"Tail of output:\n" +
-				"usage: cp [-R [-H | -L | -P]] [-fi | -n] [-apvX] source_file target_file\n" +
-				"       cp [-R [-H | -L | -P]] [-fi | -n] [-apvX] source_file ... target_directory"
+				"usage: cp [-R [-H | -L | -P]] [-fi | -n] [-apvXc] source_file target_file\n" +
+				"       cp [-R [-H | -L | -P]] [-fi | -n] [-apvXc] source_file ... target_directory"
 
 		when:
 		commandRunner.run(["cp"])
@@ -44,7 +44,7 @@ class CommandRunnerSpecification extends Specification {
 		given:
 		def cpErrorOutput = "Command failed to run (exit code 64): 'cp'\n" +
 				"Tail of output:\n" +
-				"       cp [-R [-H | -L | -P]] [-fi | -n] [-apvX] source_file ... target_directory"
+				"       cp [-R [-H | -L | -P]] [-fi | -n] [-apvXc] source_file ... target_directory"
 
 		when:
 		commandRunner.commandOutputBuffer = new CircularFifoBuffer(1)

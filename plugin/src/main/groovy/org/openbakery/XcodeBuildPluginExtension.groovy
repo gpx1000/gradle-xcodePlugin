@@ -29,6 +29,8 @@ import org.openbakery.util.PlistHelper
 import org.openbakery.util.VariableResolver
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import static groovy.io.FileType.*
+import static groovy.io.FileVisitResult.*
 
 
 /*
@@ -450,10 +452,22 @@ class XcodeBuildPluginExtension {
 		this.projectFile = new File(project.projectDir.absolutePath, projectFile)
 	}
 
+	final excludedDirs = ['.svn', '.git', '.hg', '.idea', 'node_modules', '.gradle', 'CMakeFiles']
 	File getProjectFile() {
 		if (this.projectFile != null) {
 			return this.projectFile
 		}
+		def file = null
+		project.projectDir.traverse(
+				type         : ANY,
+				nameFilter	 : ~/.*\.xcodeproj$/,
+				preDir       : { if (it.name in excludedDirs) return SKIP_SUBTREE },
+				visitRoot	 : true) {
+			if(file == null)
+				file = it
+		}
+		if(file != null)
+			return file
 		return new File(project.projectDir, project.projectDir.list(new SuffixFileFilter(".xcodeproj"))[0])
 	}
 

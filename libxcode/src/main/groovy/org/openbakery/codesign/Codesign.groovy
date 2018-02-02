@@ -87,17 +87,19 @@ class Codesign {
 		} else {
 			frameworksDirectory = new File(bundle, "Contents/Frameworks")
 		}
+		logger.info("looking for framework at: " + frameworksDirectory.absolutePath)
 
 		if (frameworksDirectory.exists()) {
 
 			FilenameFilter filter = new FilenameFilter() {
-				public boolean accept(File dir, String name) {
-					return name.toLowerCase().endsWith(".dylib") || name.toLowerCase().endsWith(".framework")
+				boolean accept(File dir, String name) {
+					return !name.toLowerCase().endsWith(".plist")
 				}
-			};
+			}
 
 			for (File file in frameworksDirectory.listFiles(filter)) {
 
+				logger.info("trying to code sign a framework")
 				performCodesign(file, null)
 
 			}

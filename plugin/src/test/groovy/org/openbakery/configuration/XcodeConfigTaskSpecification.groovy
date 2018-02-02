@@ -46,7 +46,7 @@ class XcodeConfigTaskSpecification extends Specification {
 
 		then:
 		IllegalArgumentException exception = thrown()
-		exception.message == "Target 'test' not found in project"
+		exception.message.contains("Target 'test' not found in project")
 
 	}
 }

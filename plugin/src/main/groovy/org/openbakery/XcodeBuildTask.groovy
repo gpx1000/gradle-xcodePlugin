@@ -18,6 +18,9 @@ package org.openbakery
 import org.gradle.api.tasks.TaskAction
 import org.openbakery.xcode.Xcodebuild
 
+import static groovy.io.FileType.ANY
+import static groovy.io.FileVisitResult.SKIP_SUBTREE
+
 class XcodeBuildTask extends AbstractXcodeBuildTask {
 
 	XcodeBuildTask() {
@@ -38,11 +41,17 @@ class XcodeBuildTask extends AbstractXcodeBuildTask {
 		if (parameters.scheme == null && parameters.target == null) {
 			throw new IllegalArgumentException("No 'scheme' or 'target' specified, so do not know what to build");
 		}
-		def projectPath;
-		if(parameters.XcodeProjectPath == null)
-			projectPath = project.projectDir
-		else
-			projectPath = properties.XcodeprojectPath
+		final excludedDirs = ['.svn', '.git', '.hg', '.idea', 'node_modules', '.gradle', 'CMakeFiles']
+		def file = null
+		project.projectDir.traverse(
+				type         : ANY,
+				nameFilter	 : ~/.*\.xcodeproj$/,
+				preDir       : { if (it.name in excludedDirs) return SKIP_SUBTREE },
+				visitRoot	 : true) {
+			if(file == null) {
+				file = it.parentFile
+			}
+		}
 
 		if (!project.getBuildDir().exists()) {
 			project.getBuildDir().mkdirs()
@@ -53,7 +62,11 @@ class XcodeBuildTask extends AbstractXcodeBuildTask {
 
 		logger.debug("using xcode {}", xcode)
 
-		Xcodebuild xcodebuild = new Xcodebuild(project.projectDir, commandRunner, xcode, parameters, getDestinations())
+		Xcodebuild xcodebuild
+		if(file == null)
+			xcodebuild = new Xcodebuild(project.projectDir, commandRunner, xcode, parameters, getDestinations())
+		else
+			xcodebuild = new Xcodebuild(file, commandRunner, xcode, parameters, getDestinations())
 
 		xcodebuild.execute(createXcodeBuildOutputAppender("XcodeBuildTask") , project.xcodebuild.environment)
 		logger.lifecycle("Done")

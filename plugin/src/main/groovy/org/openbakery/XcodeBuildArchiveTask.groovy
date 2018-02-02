@@ -22,7 +22,9 @@ import org.openbakery.codesign.ProvisioningProfileReader
 import org.openbakery.xcode.Type
 import org.openbakery.xcode.Xcodebuild
 
+import static groovy.io.FileType.ANY
 import static groovy.io.FileType.FILES
+import static groovy.io.FileVisitResult.SKIP_SUBTREE
 
 class XcodeBuildArchiveTask extends AbstractXcodeBuildTask {
 
@@ -328,8 +330,25 @@ class XcodeBuildArchiveTask extends AbstractXcodeBuildTask {
 			return
 		}
 
+		final excludedDirs = ['.svn', '.git', '.hg', '.idea', 'node_modules', '.gradle', 'CMakeFiles']
+		def file = null
+		project.projectDir.traverse(
+				type         : ANY,
+				nameFilter	 : ~/.*\.xcodeproj$/,
+				preDir       : { if (it.name in excludedDirs) return SKIP_SUBTREE },
+				visitRoot	 : true) {
+			if(file == null) {
+				file = it.parentFile
+			}
+		}
+
+
 		logger.debug("Create xcarchive")
-		Xcodebuild xcodebuild = new Xcodebuild(project.projectDir, commandRunner, xcode, parameters, getDestinations())
+		Xcodebuild xcodebuild
+		if(file == null)
+			xcodebuild = new Xcodebuild(project.projectDir, commandRunner, xcode, parameters, getDestinations())
+		else
+			xcodebuild = new Xcodebuild(file, commandRunner, xcode, parameters, getDestinations())
 
 		if (project.xcodebuild.useXcodebuildArchive) {
 

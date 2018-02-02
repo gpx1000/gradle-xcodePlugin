@@ -22,6 +22,7 @@ import org.gradle.api.Task
 import org.gradle.api.plugins.BasePlugin
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.tasks.testing.Test
+import org.gradle.internal.os.OperatingSystem
 import org.openbakery.appledoc.AppledocCleanTask
 import org.openbakery.appledoc.AppledocTask
 import org.openbakery.appstore.AppstorePluginExtension
@@ -167,7 +168,9 @@ class XcodePlugin implements Plugin<Project> {
 		configureAppledoc(project)
 		configureCoverage(project)
 		configureCpd(project)
-		configureCocoapods(project)
+		if(OperatingSystem.current().isMacOsX()) {
+			configureCocoapods(project)
+		}
 		configureCarthage(project)
 		configureOCLint(project)
 		configureSimulatorTasks(project)
@@ -428,7 +431,9 @@ class XcodePlugin implements Plugin<Project> {
 
 
 			configureCarthageDependencies(project)
-			configureCocoapodsDependencies(project)
+			if(OperatingSystem.current().isMacOsX()) {
+				configureCocoapodsDependencies(project)
+			}
 			configureTestRunDependencies(project)
 		}
 

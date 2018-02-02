@@ -207,7 +207,7 @@ class XcodeProjectFile {
 				return
 			}
 		}
-		throw new IllegalArgumentException("Target '" + forTargetName + "' not found in project")
+		throw new IllegalArgumentException("Target '" + forTargetName + "' not found in project options are: " + list.join("\n"))
 	}
 
 	String getValueFromTarget(String forTargetName, String key) {

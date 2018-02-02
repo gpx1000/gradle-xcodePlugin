@@ -71,7 +71,7 @@ class SimulatorRuntime {
 
 
 	int hashCode() {
-		return identifier.hashCode()
+		return identifier == null? 0 : identifier.hashCode()
 	}
 
 	

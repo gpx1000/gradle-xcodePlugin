@@ -16,8 +16,7 @@ class Xcodebuild {
 	List<Destination> destinations
 
 
-
-	public Xcodebuild(File projectDirectory, CommandRunner commandRunner, Xcode xcode, XcodebuildParameters parameters, List<Destination> destinations) {
+	Xcodebuild(File projectDirectory, CommandRunner commandRunner, Xcode xcode, XcodebuildParameters parameters, List<Destination> destinations) {
 		this.projectDirectory = projectDirectory
 		this.commandRunner = commandRunner
 		this.xcode = xcode
@@ -25,22 +24,22 @@ class Xcodebuild {
 		this.destinations = destinations
 	}
 
-	def validateParameters(OutputAppender outputAppender, Map<String, String> environment) {
+	def validateParameters(OutputAppender outputAppender) {
 		if (this.projectDirectory == null) {
-			throw new IllegalArgumentException("projectDirectory must not be null");
+			throw new IllegalArgumentException("projectDirectory must not be null")
 		}
 
 		if (outputAppender == null) {
-			throw new IllegalArgumentException("outputAppender must not be null");
+			throw new IllegalArgumentException("outputAppender must not be null")
 		}
 
 		if (parameters.scheme == null && parameters.target == null) {
-			throw new IllegalArgumentException("No 'scheme' or 'target' specified, so do not know what to build");
+			throw new IllegalArgumentException("No 'scheme' or 'target' specified, so do not know what to build")
 		}
 	}
 
 	def execute(OutputAppender outputAppender, Map<String, String> environment) {
-		validateParameters(outputAppender, environment)
+		validateParameters(outputAppender)
 		def commandList = []
 		addBuildSettings(commandList)
 		addDisableCodeSigning(commandList)
@@ -51,8 +50,8 @@ class Xcodebuild {
 		commandRunner.run(projectDirectory.absolutePath, commandList, environment, outputAppender)
 	}
 
-	def commandListForTest(OutputAppender outputAppender, Map<String, String> environment) {
-		validateParameters(outputAppender, environment)
+	def commandListForTest(OutputAppender outputAppender) {
+		validateParameters(outputAppender)
 		def commandList = []
 		commandList << 'script' << '-q' << '/dev/null'
 		addBuildSettings(commandList)
@@ -65,13 +64,13 @@ class Xcodebuild {
 	}
 
 	def executeTest(OutputAppender outputAppender, Map<String, String> environment) {
-		def commandList = commandListForTest(outputAppender, environment)
+		def commandList = commandListForTest(outputAppender)
 		commandList << "test"
 		commandRunner.run(this.projectDirectory.absolutePath, commandList, environment, outputAppender)
 	}
 
 	def executeBuildForTesting(OutputAppender outputAppender, Map<String, String> environment) {
-		def commandList = commandListForTest(outputAppender, environment)
+		def commandList = commandListForTest(outputAppender)
 		commandList << "build-for-testing"
 		commandRunner.run(this.projectDirectory.absolutePath, commandList, environment, outputAppender)
 	}
@@ -98,7 +97,7 @@ class Xcodebuild {
 	}
 
 	def executeArchive(OutputAppender outputAppender, Map<String, String> environment, String archivePath) {
-		validateParameters(outputAppender, environment)
+		validateParameters(outputAppender)
 		def commandList = []
 		addBuildSettings(commandList)
 		addDisableCodeSigning(commandList)
@@ -117,8 +116,8 @@ class Xcodebuild {
 		commandList << xcode.xcodebuild
 
 		if (parameters.scheme) {
-			commandList.add("-scheme");
-			commandList.add(parameters.scheme);
+			commandList.add("-scheme")
+			commandList.add(parameters.scheme)
 
 			if (parameters.workspace != null) {
 				commandList.add("-workspace")
@@ -150,7 +149,7 @@ class Xcodebuild {
 		}
 	}
 
-	def addDisableCodeSigning(ArrayList commandList) {
+	static def addDisableCodeSigning(ArrayList commandList) {
 		commandList.add("CODE_SIGN_IDENTITY=")
 		commandList.add("CODE_SIGNING_REQUIRED=NO")
 		//commandList.add("CODE_SIGN_ENTITLEMENTS=")
@@ -175,14 +174,14 @@ class Xcodebuild {
 
 	def addAdditionalParameters(ArrayList commandList) {
 		if (parameters.arch != null) {
-			StringBuilder archs = new StringBuilder("ARCHS=");
+			StringBuilder archs = new StringBuilder("ARCHS=")
 			for (String singleArch in parameters.arch) {
 				if (archs.length() > 7) {
-					archs.append(" ");
+					archs.append(" ")
 				}
-				archs.append(singleArch);
+				archs.append(singleArch)
 			}
-			commandList.add(archs.toString());
+			commandList.add(archs.toString())
 		}
 
 		if (parameters.additionalParameters instanceof List) {
@@ -217,15 +216,15 @@ class Xcodebuild {
 					commandList.add("-destination")
 					commandList.add(getDestinationCommandParameter(destination))
 				}
-				break;
+				break
 
 			case Type.macOS:
 				commandList.add("-destination")
 				commandList.add("platform=OS X,arch=x86_64")
-				break;
+				break
 
 			default:
-				break;
+				break
 		}
 	}
 
@@ -251,7 +250,7 @@ class Xcodebuild {
 		return false
 	}
 
-	protected String getDestinationCommandParameter(Destination destination) {
+	protected static String getDestinationCommandParameter(Destination destination) {
 		def destinationParameters = []
 
 		if (destination.platform != null) {
@@ -289,7 +288,7 @@ class Xcodebuild {
 			def commandList = [xcode.xcodebuild, "clean", "-showBuildSettings"]
 
 			if (parameters.scheme != null && parameters.workspace != null) {
-				commandList.add("-scheme");
+				commandList.add("-scheme")
 				commandList.add(parameters.scheme)
 				commandList.add("-workspace")
 				commandList.add(parameters.workspace)
@@ -315,7 +314,7 @@ class Xcodebuild {
 		}
 
 	@Override
-	public String toString() {
+	String toString() {
 		return "Xcodebuild{" +
 						"xcodePath='" + xcodePath + '\'' +
 						parameters +
