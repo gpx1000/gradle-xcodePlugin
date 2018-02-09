@@ -21,3 +21,7 @@ xcodebuild {
 	target = 'Echo'
 	type = 'OSX'
 }
+
+cmakeBuild {
+	cmakeBinary = "/usr/local/bin/cmake"
+}

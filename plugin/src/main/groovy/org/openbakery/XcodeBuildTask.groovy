@@ -27,8 +27,9 @@ class XcodeBuildTask extends AbstractXcodeBuildTask {
 		super()
 
 		dependsOn(
-						XcodePlugin.XCODE_CONFIG_TASK_NAME,
-						XcodePlugin.INFOPLIST_MODIFY_TASK_NAME,
+				XcodePlugin.CMAKE_XCODE_GENERATOR,
+				XcodePlugin.XCODE_CONFIG_TASK_NAME,
+				XcodePlugin.INFOPLIST_MODIFY_TASK_NAME
 		)
 		this.description = "Builds the Xcode project"
 	}

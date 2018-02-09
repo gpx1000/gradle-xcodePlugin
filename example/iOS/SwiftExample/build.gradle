@@ -44,5 +44,8 @@ xcodebuild {
 }
 
 
+cmakeXCode {
+	cmakeBinary = "/usr/local/bin/cmake"
+}
 
 

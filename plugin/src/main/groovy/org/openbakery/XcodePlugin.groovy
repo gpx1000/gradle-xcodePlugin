@@ -23,6 +23,7 @@ import org.gradle.api.plugins.BasePlugin
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.tasks.testing.Test
 import org.gradle.internal.os.OperatingSystem
+import org.openbakery.CMake.CMakeXCodePluginExtension
 import org.openbakery.appledoc.AppledocCleanTask
 import org.openbakery.appledoc.AppledocTask
 import org.openbakery.appstore.AppstorePluginExtension
@@ -85,10 +86,12 @@ class XcodePlugin implements Plugin<Project> {
 	public static final String COVERAGE_GROUP_NAME = "Coverage"
 	public static final String COCOAPODS_GROUP_NAME = "Cocoapods"
 	public static final String CARTHAGE_GROUP_NAME = "Carthage"
-	public static final String SIMULATORS_GROUP_NAME = "Simulators"
+//	public static final String SIMULATORS_GROUP_NAME = "Simulators"
 	public static final String ANALYTICS_GROUP_NAME = "Analytics"
+	public static final String CMAKE_GROUP_NAME = "CMakeGenerator"
 
 
+	public static final String CMAKE_XCODE_GENERATOR = "cmakeXCodeGenerator"
 	public static final String XCODE_TEST_TASK_NAME = "xcodetest"
 	public static final String XCODE_BUILD_FOR_TEST_TASK_NAME = "xcodebuildForTest"
 	public static final String XCODE_TEST_RUN_TASK_NAME =  "xcodetestrun"
@@ -147,10 +150,11 @@ class XcodePlugin implements Plugin<Project> {
 
 
 	void apply(Project project) {
-		project.getPlugins().apply(BasePlugin.class);
+		project.getPlugins().apply(BasePlugin.class)
 
-		System.setProperty("java.awt.headless", "true");
+		System.setProperty("java.awt.headless", "true")
 
+		configureCMakeBuild(project)
 		configureExtensions(project)
 		configureClean(project)
 		configureBuild(project)
@@ -178,9 +182,19 @@ class XcodePlugin implements Plugin<Project> {
 	}
 
 
-	void configureProperties(Project project) {
+	static void configureProperties(Project project) {
 
 		project.afterEvaluate {
+
+			if (project.hasProperty('cmakeXCode.cmakeBinary')) {
+				project.cmakeXCode.cmakeBinary = project['cmakeXCode.cmakeBinary']
+			}
+			if(project.hasProperty('cmakeXCode.cmakeFile'))
+				project.cmakeXCode.cmakeFile = project['cmakeXCode.cmakeFile']
+			if(project.hasProperty('cmakeXCode.arguments'))
+				project.cmakeXCode.arguments = project['cmakeXCode.arguments']
+			if(project.hasProperty('cmakeXCode.buildDir'))
+				project.cmakeXCode.buildDir = project['cmakeXCode.buildDir']
 
 			if (project.hasProperty('infoplist.bundleIdentifier')) {
 				project.infoplist.bundleIdentifier = project['infoplist.bundleIdentifier']
@@ -401,25 +415,25 @@ class XcodePlugin implements Plugin<Project> {
 
 
 			if (project.hasProperty('oclint.reportType')) {
-				project.oclint.reportType = project['oclint.reportType'];
+				project.oclint.reportType = project['oclint.reportType']
 			}
 			if (project.hasProperty('oclint.rules')) {
-				project.oclint.rules = project['oclint.rules'];
+				project.oclint.rules = project['oclint.rules']
 			}
 			if (project.hasProperty('oclint.disableRules')) {
-				project.oclint.disableRules = project['oclint.disableRules'];
+				project.oclint.disableRules = project['oclint.disableRules']
 			}
 			if (project.hasProperty('oclint.excludes')) {
-				project.oclint.excludes = project['oclint.excludes'];
+				project.oclint.excludes = project['oclint.excludes']
 			}
 			if (project.hasProperty('oclint.maxPriority1')) {
-				project.oclint.maxPriority1 = project['oclint.maxPriority1'];
+				project.oclint.maxPriority1 = project['oclint.maxPriority1']
 			}
 			if (project.hasProperty('oclint.maxPriority2')) {
-				project.oclint.maxPriority2 = project['oclint.maxPriority2'];
+				project.oclint.maxPriority2 = project['oclint.maxPriority2']
 			}
 			if (project.hasProperty('oclint.maxPriority3')) {
-				project.oclint.maxPriority3 = project['oclint.maxPriority3'];
+				project.oclint.maxPriority3 = project['oclint.maxPriority3']
 			}
 
 
@@ -440,11 +454,12 @@ class XcodePlugin implements Plugin<Project> {
 	}
 
 
-	void configureExtensions(Project project) {
+	static void configureExtensions(Project project) {
 		project.extensions.create("xcodebuild", XcodeBuildPluginExtension, project)
 		project.extensions.create("infoplist", InfoPlistExtension)
 		project.extensions.create("hockeykit", HockeyKitPluginExtension, project)
 		project.extensions.create("appstore", AppstorePluginExtension, project)
+		project.extensions.create("cmakeXCode", CMakeXCodePluginExtension, project)
 		project.extensions.create("hockeyapp", HockeyAppPluginExtension, project)
 		project.extensions.create("deploygate", DeployGatePluginExtension, project)
 		project.extensions.create("crashlytics", CrashlyticsPluginExtension, project)
@@ -452,42 +467,46 @@ class XcodePlugin implements Plugin<Project> {
 		project.extensions.create("oclint", OCLintPluginExtension, project)
 	}
 
+	private static void configureCMakeBuild(Project project) {
+		CMakeXCodeGenerator cMakeXCodeGenerator = project.getTasks().create(CMAKE_XCODE_GENERATOR, CMakeXCodeGenerator.class)
+		cMakeXCodeGenerator.setGroup(CMAKE_GROUP_NAME)
+	}
 
-	private void configureTestRunDependencies(Project project) {
+	private static void configureTestRunDependencies(Project project) {
 		for (XcodeTestRunTask xcodeTestRunTask : project.getTasks().withType(XcodeTestRunTask.class)) {
 			if (xcodeTestRunTask.runOnDevice()) {
-				xcodeTestRunTask.dependsOn(XcodePlugin.KEYCHAIN_CREATE_TASK_NAME, XcodePlugin.PROVISIONING_INSTALL_TASK_NAME)
-				xcodeTestRunTask.finalizedBy(XcodePlugin.KEYCHAIN_REMOVE_SEARCH_LIST_TASK_NAME)
+				xcodeTestRunTask.dependsOn(KEYCHAIN_CREATE_TASK_NAME, PROVISIONING_INSTALL_TASK_NAME)
+				xcodeTestRunTask.finalizedBy(KEYCHAIN_REMOVE_SEARCH_LIST_TASK_NAME)
 			}
 		}
 	}
 
-	private void configureBuild(Project project) {
-		XcodeBuildTask xcodebuildTask = project.getTasks().create(XCODE_BUILD_TASK_NAME, XcodeBuildTask.class);
-		xcodebuildTask.setGroup(XCODE_GROUP_NAME);
+	private static void configureBuild(Project project) {
+		XcodeBuildTask xcodebuildTask = project.getTasks().create(XCODE_BUILD_TASK_NAME, XcodeBuildTask.class)
+		xcodebuildTask.setGroup(XCODE_GROUP_NAME)
 
-		XcodeConfigTask configTask = project.getTasks().create(XCODE_CONFIG_TASK_NAME, XcodeConfigTask.class);
-		configTask.setGroup(XCODE_GROUP_NAME);
+		XcodeConfigTask configTask = project.getTasks().create(XCODE_CONFIG_TASK_NAME, XcodeConfigTask.class)
+		configTask.setGroup(XCODE_GROUP_NAME)
 
-		project.getTasks().getByName(BasePlugin.ASSEMBLE_TASK_NAME).dependsOn(xcodebuildTask);
+		project.getTasks().getByName(BasePlugin.ASSEMBLE_TASK_NAME).dependsOn(xcodebuildTask)
 	}
 
 
-	private void configureClean(Project project) {
-		XcodeBuildCleanTask xcodeBuildCleanTask = project.getTasks().create(XCODE_CLEAN_TASK_NAME, XcodeBuildCleanTask.class);
-		xcodeBuildCleanTask.setGroup(XCODE_GROUP_NAME);
+	private static void configureClean(Project project) {
+		XcodeBuildCleanTask xcodeBuildCleanTask = project.getTasks().create(XCODE_CLEAN_TASK_NAME, XcodeBuildCleanTask.class)
+		xcodeBuildCleanTask.setGroup(XCODE_GROUP_NAME)
 
-		project.getTasks().getByName(BasePlugin.CLEAN_TASK_NAME).dependsOn(xcodeBuildCleanTask);
+		project.getTasks().getByName(BasePlugin.CLEAN_TASK_NAME).dependsOn(xcodeBuildCleanTask)
 	}
 
-	private void configureArchive(Project project) {
-		XcodeBuildArchiveTask xcodeBuildArchiveTask = project.getTasks().create(ARCHIVE_TASK_NAME, XcodeBuildArchiveTask.class);
-		xcodeBuildArchiveTask.setGroup(XCODE_GROUP_NAME);
+	private static void configureArchive(Project project) {
+		XcodeBuildArchiveTask xcodeBuildArchiveTask = project.getTasks().create(ARCHIVE_TASK_NAME, XcodeBuildArchiveTask.class)
+		xcodeBuildArchiveTask.setGroup(XCODE_GROUP_NAME)
 
-		//xcodeBuildArchiveTask.dependsOn(project.getTasks().getByName(BasePlugin.CLEAN_TASK_NAME));
+		//xcodeBuildArchiveTask.dependsOn(project.getTasks().getByName(BasePlugin.CLEAN_TASK_NAME))
 	}
 
-	private void configureSimulatorTasks(Project project) {
+	private static void configureSimulatorTasks(Project project) {
 		project.task(SIMULATORS_LIST_TASK_NAME, type: SimulatorsListTask, group: SIMULATORS_LIST_TASK_NAME)
 		project.task(SIMULATORS_CREATE_TASK_NAME, type: SimulatorsCreateTask, group: SIMULATORS_LIST_TASK_NAME)
 		project.task(SIMULATORS_CLEAN_TASK_NAME, type: SimulatorsCleanTask, group: SIMULATORS_LIST_TASK_NAME)
@@ -497,40 +516,40 @@ class XcodePlugin implements Plugin<Project> {
 		project.task(SIMULATORS_KILL_TASK_NAME, type: SimulatorKillTask, group: SIMULATORS_LIST_TASK_NAME)
 	}
 
-	private void configureHockeyKit(Project project) {
+	private static void configureHockeyKit(Project project) {
 		project.task(HOCKEYKIT_MANIFEST_TASK_NAME, type: HockeyKitManifestTask, group: HOCKEYKIT_GROUP_NAME)
-		HockeyKitArchiveTask hockeyKitArchiveTask = project.task(HOCKEYKIT_ARCHIVE_TASK_NAME, type: HockeyKitArchiveTask, group: HOCKEYKIT_GROUP_NAME)
+		project.task(HOCKEYKIT_ARCHIVE_TASK_NAME, type: HockeyKitArchiveTask, group: HOCKEYKIT_GROUP_NAME)
 		project.task(HOCKEYKIT_NOTES_TASK_NAME, type: HockeyKitReleaseNotesTask, group: HOCKEYKIT_GROUP_NAME)
 		project.task(HOCKEYKIT_IMAGE_TASK_NAME, type: HockeyKitImageTask, group: HOCKEYKIT_GROUP_NAME)
 		project.task(HOCKEYKIT_CLEAN_TASK_NAME, type: HockeyKitCleanTask, group: HOCKEYKIT_GROUP_NAME)
 
-		DefaultTask hockeykitTask = project.task(HOCKEYKIT_TASK_NAME, type: DefaultTask, description: "Creates a build that can be deployed on a hockeykit Server", group: HOCKEYKIT_GROUP_NAME);
+		DefaultTask hockeykitTask = project.task(HOCKEYKIT_TASK_NAME, type: DefaultTask, description: "Creates a build that can be deployed on a hockeykit Server", group: HOCKEYKIT_GROUP_NAME)
 		hockeykitTask.dependsOn(HOCKEYKIT_ARCHIVE_TASK_NAME, HOCKEYKIT_MANIFEST_TASK_NAME, HOCKEYKIT_IMAGE_TASK_NAME, HOCKEYKIT_NOTES_TASK_NAME)
 	}
 
-	private void configureKeychain(Project project) {
+	private static void configureKeychain(Project project) {
 		project.task(KEYCHAIN_CREATE_TASK_NAME, type: KeychainCreateTask, group: XCODE_GROUP_NAME)
 		project.task(KEYCHAIN_CLEAN_TASK_NAME, type: KeychainCleanupTask, group: XCODE_GROUP_NAME)
 		project.task(KEYCHAIN_REMOVE_SEARCH_LIST_TASK_NAME, type: KeychainRemoveFromSearchListTask, group: XCODE_GROUP_NAME)
 	}
 
-	private void configureTest(Project project) {
+	private static void configureTest(Project project) {
 		project.task(XCODE_TEST_TASK_NAME, type: XcodeTestTask, group: XCODE_GROUP_NAME)
 		project.task(XCODE_BUILD_FOR_TEST_TASK_NAME, type: XcodeBuildForTestTask, group: XCODE_GROUP_NAME)
 		project.task(XCODE_TEST_RUN_TASK_NAME, type: XcodeTestRunTask, group: XCODE_GROUP_NAME)
 
 	}
 
-	private configureInfoPlist(Project project) {
+	private static configureInfoPlist(Project project) {
 		project.task(INFOPLIST_MODIFY_TASK_NAME, type: InfoPlistModifyTask, group: XCODE_GROUP_NAME)
 	}
 
-	private configureProvisioning(Project project) {
+	private static configureProvisioning(Project project) {
 		project.task(PROVISIONING_INSTALL_TASK_NAME, type: ProvisioningInstallTask, group: XCODE_GROUP_NAME)
 		project.task(PROVISIONING_CLEAN_TASK_NAME, type: ProvisioningCleanupTask, group: XCODE_GROUP_NAME)
 	}
 
-	private configurePackage(Project project) {
+	private static configurePackage(Project project) {
 		PackageTask packageTask = project.task(PACKAGE_TASK_NAME, type: PackageTask, group: XCODE_GROUP_NAME)
 
 
@@ -550,79 +569,79 @@ class XcodePlugin implements Plugin<Project> {
 		packageTask.shouldRunAfter(xcodeBuildTask)
 	}
 
-	private configureAppstore(Project project) {
+	private static configureAppstore(Project project) {
 		project.task(APPSTORE_UPLOAD_TASK_NAME, type: AppstoreUploadTask, group: APPSTORE_GROUP_NAME)
 		project.task(APPSTORE_VALIDATE_TASK_NAME, type: AppstoreValidateTask, group: APPSTORE_GROUP_NAME)
 	}
 
 
-	private void configureHockeyApp(Project project) {
+	private static void configureHockeyApp(Project project) {
 		project.task(HOCKEYAPP_CLEAN_TASK_NAME, type: HockeyAppCleanTask, group: HOCKEYAPP_GROUP_NAME)
 		project.task(HOCKEYAPP_TASK_NAME, type: HockeyAppUploadTask, group: HOCKEYAPP_GROUP_NAME)
 	}
 
-	private void configureAppledoc(Project project) {
+	private static void configureAppledoc(Project project) {
 		project.task(APPLEDOC_TASK_NAME, type: AppledocTask, group: APPLE_DOC_GROUP_NAME)
 		project.task(APPLEDOC_CLEAN_TASK_NAME, type: AppledocCleanTask, group: APPLE_DOC_GROUP_NAME)
 
 	}
 
-	private void configureCoverage(Project project) {
+	private static void configureCoverage(Project project) {
 		project.task(COVERAGE_TASK_NAME, type: CoverageTask, group: COVERAGE_GROUP_NAME)
 		project.task(COVERAGE_CLEAN_TASK_NAME, type: CoverageCleanTask, group: COVERAGE_GROUP_NAME)
 
 	}
 
-	private void configureCpd(Project project) {
+	private static void configureCpd(Project project) {
 		project.task(CPD_TASK_NAME, type: CpdTask, group: ANALYTICS_GROUP_NAME)
 	}
 
-	private void configureDeployGate(Project project) {
+	private static void configureDeployGate(Project project) {
 		project.task(DEPLOYGATE_CLEAN_TASK_NAME, type: DeployGateCleanTask, group: DEPLOYGATE_GROUP_NAME)
 		project.task(DEPLOYGATE_TASK_NAME, type: DeployGateUploadTask, group: DEPLOYGATE_GROUP_NAME)
 	}
 
-	private void configureCrashlytics(Project project) {
+	private static void configureCrashlytics(Project project) {
 		project.task(CRASHLYTICS_TASK_NAME, type: CrashlyticsUploadTask, group: CRASHLYTICS_GROUP_NAME)
 	}
 
-	private void configureCocoapods(Project project) {
+	private static void configureCocoapods(Project project) {
 		project.task(COCOAPODS_INSTALL_TASK_NAME, type: CocoapodsInstallTask, group: COCOAPODS_GROUP_NAME)
 		project.task(COCOAPODS_BOOTSTRAP_TASK_NAME, type: CocoapodsBootstrapTask, group: COCOAPODS_GROUP_NAME)
 		project.task(COCOAPODS_UPDATE_TASK_NAME, type: CocoapodsUpdateTask, group: COCOAPODS_GROUP_NAME)
 	}
 
-	private configureCocoapodsDependencies(Project project) {
-		CocoapodsInstallTask cocoapodsInstallTask = project.getTasks().getByName(XcodePlugin.COCOAPODS_INSTALL_TASK_NAME)
+	private static configureCocoapodsDependencies(Project project) {
+		CocoapodsInstallTask cocoapodsInstallTask = project.getTasks().getByName(COCOAPODS_INSTALL_TASK_NAME)
 		if (cocoapodsInstallTask.hasPodfile()) {
 			addDependencyToBuild(project, cocoapodsInstallTask)
 		}
 	}
 
-	private void configureCarthage(Project project) {
+	private static void configureCarthage(Project project) {
 		project.task(CARTHAGE_CLEAN_TASK_NAME, type: CarthageCleanTask, group: CARTHAGE_GROUP_NAME)
 		project.task(CARTHAGE_UPDATE_TASK_NAME, type: CarthageUpdateTask, group: CARTHAGE_GROUP_NAME)
 	}
 
-	private configureCarthageDependencies(Project project) {
-		CarthageUpdateTask carthageUpdateTask = project.getTasks().getByName(XcodePlugin.CARTHAGE_UPDATE_TASK_NAME)
-		CarthageCleanTask carthageCleanTask = project.getTasks().getByName(XcodePlugin.CARTHAGE_CLEAN_TASK_NAME)
+	private static configureCarthageDependencies(Project project) {
+		CarthageUpdateTask carthageUpdateTask = project.getTasks().getByName(CARTHAGE_UPDATE_TASK_NAME)
+		CarthageCleanTask carthageCleanTask = project.getTasks().getByName(CARTHAGE_CLEAN_TASK_NAME)
 
 		if (carthageUpdateTask.hasCartfile()) {
 			addDependencyToBuild(project, carthageUpdateTask)
-			project.getTasks().getByName(BasePlugin.CLEAN_TASK_NAME).dependsOn(carthageCleanTask);
+			project.getTasks().getByName(BasePlugin.CLEAN_TASK_NAME).dependsOn(carthageCleanTask)
 		}
 	}
 
-	private void configureOCLint(Project project) {
+	private static void configureOCLint(Project project) {
 		OCLintTask reportTask = project.task(OCLINT_REPORT_TASK_NAME, type: OCLintTask, group: ANALYTICS_GROUP_NAME)
 
-		Task ocLintTask = project.getTasks().create(OCLINT_TASK_NAME);
+		Task ocLintTask = project.getTasks().create(OCLINT_TASK_NAME)
 		ocLintTask.group = ANALYTICS_GROUP_NAME
 		ocLintTask.description = "Runs: " +  BasePlugin.CLEAN_TASK_NAME + " " + XCODE_BUILD_TASK_NAME + " " + OCLINT_REPORT_TASK_NAME
 		ocLintTask.dependsOn(project.getTasks().getByName(BasePlugin.CLEAN_TASK_NAME))
 
-		XcodeBuildTask xcodeBuildTask = project.getTasks().getByName(XcodePlugin.XCODE_BUILD_TASK_NAME)
+		XcodeBuildTask xcodeBuildTask = project.getTasks().getByName(XCODE_BUILD_TASK_NAME)
 		reportTask.mustRunAfter(xcodeBuildTask)
 
 		ocLintTask.dependsOn(xcodeBuildTask)
@@ -631,7 +650,7 @@ class XcodePlugin implements Plugin<Project> {
 	}
 
 
-	private void addDependencyToBuild(Project project, Task task) {
+	private static void addDependencyToBuild(Project project, Task task) {
 		logger.info("add task dependency for {}", task)
 
 		for (Task buildTask : project.getTasks().withType(XcodeBuildTask.class)) {

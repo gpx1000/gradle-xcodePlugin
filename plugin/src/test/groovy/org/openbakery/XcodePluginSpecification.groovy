@@ -4,8 +4,10 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.plugins.BasePlugin
+import org.gradle.api.plugins.ExtensionContainer
 import org.gradle.api.tasks.TaskDependency
 import org.gradle.testfixtures.ProjectBuilder
+import org.openbakery.CMake.CMakeXCodePluginExtension
 import org.openbakery.appstore.AppstorePluginExtension
 import org.openbakery.appstore.AppstoreUploadTask
 import org.openbakery.appstore.AppstoreValidateTask
@@ -34,9 +36,13 @@ class XcodePluginSpecification extends Specification {
 
 	void setup() {
 		project = ProjectBuilder.builder().build()
-		project.apply plugin: org.openbakery.XcodePlugin
+		project.apply plugin: XcodePlugin
 	}
 
+	def "contain task cmakeXCodeGenerator"() {
+		expect:
+		project.tasks.findByName('cmakeXCodeGenerator') instanceof CMakeXCodeGenerator
+	}
 
 	def "not contain unknown task"() {
 		expect:
@@ -144,6 +150,9 @@ class XcodePluginSpecification extends Specification {
 			if (task.getClass().getName().startsWith("org.openbakery.HockeyApp")) {
 				assert task.group == XcodePlugin.HOCKEYAPP_GROUP_NAME
 			}
+			if (task.getClass().getName().startsWith("org.openbakery.CMakeGenerator")) {
+				assert task.group == XcodePlugin.CMAKE_XCODE_GENERATOR
+			}
 		}
 	}
 
@@ -151,6 +160,11 @@ class XcodePluginSpecification extends Specification {
 	def "contain extension xcodebuild"() {
 		expect:
 		project.extensions.findByName('xcodebuild') instanceof XcodeBuildPluginExtension
+	}
+
+	def "contain extension cmakeBuild"() {
+		expect:
+		project.extensions.findByName('cmakeXCode') instanceof CMakeXCodePluginExtension
 	}
 
 

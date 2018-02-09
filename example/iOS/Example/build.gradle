@@ -44,6 +44,10 @@ xcodebuild {
 	destination = ['iPad Air', 'iPhone 6s' ]
 }
 
+cmakeXCode {
+	cmakeBinary = "/usr/local/bin/cmake"
+}
+
 infoplist {
 	// override the bundle identifier that was specified in the xcode project.
 	bundleIdentifier= 'org.openbakery.gxp.Example'

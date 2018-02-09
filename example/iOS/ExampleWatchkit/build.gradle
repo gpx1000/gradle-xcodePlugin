@@ -48,6 +48,10 @@ xcodebuild {
 	
 }
 
+cmakeBuild {
+	cmakeBinary = "/usr/local/bin/cmake"
+}
+
 
 task continuous(dependsOn:'test') {
 	description = 'Builds the app and runs all unit test in the Simulator for the iPhone and iPad'

@@ -60,7 +60,7 @@ abstract class AbstractXcodeTask extends DefaultTask {
 	 * @param destination
 	 */
 	def copy(File source, File destination) {
-		logger.debug("Copy '{}' -> '{}'", source, destination);
+		logger.debug("Copy '{}' -> '{}'", source, destination)
 
 		// use rsync to preserve the file permissions (I want to stay compatible with java 1.6 and there is no option for this)
 		/*
@@ -112,7 +112,7 @@ abstract class AbstractXcodeTask extends DefaultTask {
 		return destinationFile.absolutePath
 	}
 
-	def getOSVersion() {
+	static def getOSVersion() {
 		Version result = new Version()
 		String versionString = System.getProperty("os.version")
 		Scanner scanner = new Scanner(versionString).useDelimiter("\\.")
@@ -123,7 +123,7 @@ abstract class AbstractXcodeTask extends DefaultTask {
 			result.minor = scanner.nextInt()
 		}
 		if (scanner.hasNext()) {
-			result.maintenance = scanner.nextInt();
+			result.maintenance = scanner.nextInt()
 		}
 		return result
 	}
@@ -131,7 +131,7 @@ abstract class AbstractXcodeTask extends DefaultTask {
 
 	def createZip(File fileToZip) {
 		File zipFile = new File(fileToZip.parentFile, FilenameUtils.getBaseName(fileToZip.getName()) + ".zip")
-		createZip(zipFile, zipFile.parentFile, fileToZip);
+		createZip(zipFile, zipFile.parentFile, fileToZip)
 	}
 
 	def createZip(File zipFile, File fileToZip) {
@@ -155,10 +155,10 @@ abstract class AbstractXcodeTask extends DefaultTask {
 		}
 
 		def arguments = []
-		arguments << '--symlinks';
-		arguments << '--verbose';
-		arguments << '--recurse-paths';
-		arguments << zipFile.absolutePath;
+		arguments << '--symlinks'
+		arguments << '--verbose'
+		arguments << '--recurse-paths'
+		arguments << zipFile.absolutePath
 		for (File file : filesToZip) {
 			arguments << file.getName()
 		}
@@ -180,7 +180,7 @@ abstract class AbstractXcodeTask extends DefaultTask {
 	 * @param date
 	 * @return
 	 */
-	def formatDate(date) {
+	static def formatDate(date) {
 		TimeZone timeZone = TimeZone.getTimeZone("UTC")
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
 		dateFormat.setTimeZone(timeZone)

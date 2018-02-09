@@ -13,13 +13,13 @@ class BuildConfiguration {
 	String entitlements
 	String productType
 
-	BuildConfiguration parent;
+	BuildConfiguration parent
 
-	public BuildConfiguration(String target) {
+	BuildConfiguration(String target) {
 		this.target = target
 	}
 
-	public BuildConfiguration(String target, BuildConfiguration parent) {
+	BuildConfiguration(String target, BuildConfiguration parent) {
 		this(target)
 		this.parent = parent
 	}
@@ -46,7 +46,7 @@ class BuildConfiguration {
 
 	String getProductName() {
 		if (productName != null) {
-			return productName;
+			return productName
 		}
 		if (parent != null) {
 			return parent.productName
@@ -83,7 +83,7 @@ class BuildConfiguration {
 		return result
 	}
 
-	String resolve(String variable, String key, String value) {
+	static String resolve(String variable, String key, String value) {
 		if (variable == '${' + key + '}') {
 			return value
 		}

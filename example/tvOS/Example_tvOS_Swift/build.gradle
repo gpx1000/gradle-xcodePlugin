@@ -22,3 +22,7 @@ xcodebuild {
 		platform='tvOS Simulator'
 	}
 }
+
+cmakeBuild {
+	cmakeBinary = "/usr/local/bin/cmake"
+}

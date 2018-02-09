@@ -21,6 +21,10 @@ xcodebuild {
 	type = 'OSX'
 }
 
+cmakeBuild {
+	cmakeBinary = "/usr/local/bin/cmake"
+}
+
 coverage {
   outputFormat = 'html'
 }
